@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import trade
+from app.routes import prices, trade
 
 app = FastAPI(title="crypto-tracker backend")
 
@@ -12,4 +12,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(prices.router)
 app.include_router(trade.router)

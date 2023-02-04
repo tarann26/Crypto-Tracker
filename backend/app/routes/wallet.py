@@ -43,3 +43,19 @@ def balances(address: str):
         },
         "tokens": tokens,
     }
+
+
+@router.get("/api/wallet/{address}/transactions")
+def transactions(address: str, limit: int = 20):
+    _validate(address)
+
+    try:
+        sigs = solana.get_signatures(address, limit=min(limit, 50))
+    except solana.RpcError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    return {"transactions": [{
+        "signature": s["signature"],
+        "block_time": s.get("blockTime"),
+        "status": "failed" if s.get("err") else "ok",
+    } for s in sigs]}

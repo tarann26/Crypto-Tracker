@@ -56,6 +56,38 @@ def paper_trade(req: PaperTradeRequest):
     return {"trade": asdict(trade) | {"note": "paper fill recorded, nothing sent on chain"}}
 
 
+class SwapRequest(BaseModel):
+    user_public_key: str
+    input_mint: str
+    amount: float = Field(gt=0)
+    slippage_bps: int = Field(default=50, ge=1, le=1000)
+
+
+@router.post("/api/trade/swap")
+def build_swap(req: SwapRequest):
+    try:
+        q = jupiter.get_quote(req.input_mint, req.amount, req.slippage_bps)
+        tx = jupiter.build_swap_transaction(q["quote"], req.user_public_key)
+    except (jupiter.QuoteError, solana.RpcError) as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    return {"swap_transaction": tx, "quote": q}
+
+
+class ExecuteRequest(BaseModel):
+    signed_transaction: str
+
+
+@router.post("/api/trade/execute")
+def execute(req: ExecuteRequest):
+    try:
+        signature = solana.send_transaction(req.signed_transaction)
+    except solana.RpcError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    return solana.wait_for_confirmation(signature)
+
+
 @router.get("/api/trade/paper")
 def paper_ledger(session_id: str):
     session = store.get_or_create_session(session_id)

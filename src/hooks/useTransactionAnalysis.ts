@@ -66,12 +66,10 @@ export const useTransactionAnalysis = (connection: Connection | null) => {
       const { blockTime, transaction: txn } = transaction;
       if (!blockTime || !txn.message.instructions) return null;
 
-      // Look for token transfers or swaps
       for (const instruction of txn.message.instructions) {
         if ('parsed' in instruction && instruction.parsed) {
           const parsed = instruction.parsed;
-          
-          // Handle SPL token transfers
+
           if (parsed.type === 'transfer' && parsed.info) {
             return {
               wallet: walletAddress,
@@ -83,7 +81,6 @@ export const useTransactionAnalysis = (connection: Connection | null) => {
             };
           }
           
-          // Handle other transaction types
           if (parsed.type === 'swap' || parsed.type === 'buy' || parsed.type === 'sell') {
             return {
               wallet: walletAddress,
@@ -153,7 +150,6 @@ export const useTransactionAnalysis = (connection: Connection | null) => {
       return acc;
     }, {} as Record<string, TransactionPattern[]>);
     
-    // Calculate correlation for each shared token
     for (const token of Object.keys(tokenGroups1)) {
       if (tokenGroups2[token]) {
         const group1 = tokenGroups1[token].sort((a, b) => a.timestamp - b.timestamp);
@@ -191,7 +187,6 @@ export const useTransactionAnalysis = (connection: Connection | null) => {
     try {
       const allPatterns: TransactionPattern[] = [];
       
-      // Fetch transaction history for all wallets
       for (let i = 0; i < walletAddresses.length; i++) {
         const wallet = walletAddresses[i];
         const patterns = await fetchWalletHistory(wallet);
@@ -201,7 +196,6 @@ export const useTransactionAnalysis = (connection: Connection | null) => {
       
       setTransactionPatterns(allPatterns);
       
-      // Calculate correlations
       setAnalysisProgress(75);
       const correlations = calculateCorrelations(allPatterns);
       setWalletCorrelations(correlations);

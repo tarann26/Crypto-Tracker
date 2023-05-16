@@ -39,13 +39,11 @@ export const useLeaderDetection = () => {
 
     const walletPatterns = patterns.filter(p => p.wallet === walletAddress);
     
-    // Calculate metrics
     const followerCount = leadingCorrelations.length;
     const avgCorrelation = leadingCorrelations.reduce((sum, c) => sum + c.correlation, 0) / followerCount;
     const avgLeadTime = leadingCorrelations.reduce((sum, c) => sum + Math.abs(c.leadLagSeconds), 0) / followerCount;
     const avgConfidence = leadingCorrelations.reduce((sum, c) => sum + c.confidence, 0) / followerCount;
     
-    // Leader score calculation
     const volumeScore = Math.min(walletPatterns.length / 100, 1); // Normalize transaction count
     const correlationScore = avgCorrelation;
     const consistencyScore = avgConfidence;
@@ -73,14 +71,12 @@ export const useLeaderDetection = () => {
     const leaders: LeaderWallet[] = [];
     const clusters: FollowerCluster[] = [];
 
-    // Get all unique wallet addresses
     const allWallets = new Set([
       ...correlations.map(c => c.wallet1),
       ...correlations.map(c => c.wallet2),
       ...monitoredWallets
     ]);
 
-    // Calculate leader scores for each wallet
     for (const wallet of allWallets) {
       const leaderData = calculateLeaderScore(wallet, correlations, patterns);
       if (leaderData && leaderData.leaderScore > 0.3) { // Minimum threshold
@@ -88,10 +84,8 @@ export const useLeaderDetection = () => {
       }
     }
 
-    // Sort by leader score
     leaders.sort((a, b) => b.leaderScore - a.leaderScore);
 
-    // Build follower clusters
     for (const leader of leaders.slice(0, 10)) { // Top 10 leaders
       const followers = correlations
         .filter(c => 
@@ -132,7 +126,6 @@ export const useLeaderDetection = () => {
     return { leaders, clusters };
   }, [calculateLeaderScore]);
 
-  // Get top leaders for monitoring
   const topLeaders = useMemo(() => {
     return detectedLeaders
       .filter(leader => leader.leaderScore > 0.5 && leader.followerCount >= 2)

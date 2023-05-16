@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const fetchTopStocks = async () => {
-  // Using Alpha Vantage API for stock data (demo data for now)
+  // hardcoded for now, haven't wired up the Alpha Vantage API yet
   const mockStocks = [
     { symbol: "AAPL", name: "Apple Inc.", price: 189.25, change: 2.15, changePercent: 1.15, volume: 45234567 },
     { symbol: "MSFT", name: "Microsoft Corp.", price: 378.90, change: -1.45, changePercent: -0.38, volume: 28456789 },

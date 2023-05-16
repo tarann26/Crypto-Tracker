@@ -35,8 +35,7 @@ export const useWalletMonitoring = (connection: Connection | null) => {
 
     try {
       const publicKey = new PublicKey(address);
-      
-      // Get initial account info
+
       const accountInfo = await connection.getAccountInfo(publicKey);
       
       const newWallet: MonitoredWallet = {
@@ -54,7 +53,6 @@ export const useWalletMonitoring = (connection: Connection | null) => {
         return [...prev, newWallet];
       });
 
-      // Subscribe to account changes
       if (!subscriptions.has(address)) {
         const subscriptionId = connection.onAccountChange(
           publicKey,
@@ -115,7 +113,6 @@ export const useWalletMonitoring = (connection: Connection | null) => {
   const stopMonitoring = useCallback(async () => {
     if (!connection) return;
 
-    // Remove all subscriptions
     for (const [address, subscriptionId] of subscriptions.entries()) {
       await connection.removeAccountChangeListener(subscriptionId);
     }
@@ -125,7 +122,6 @@ export const useWalletMonitoring = (connection: Connection | null) => {
     console.log('🛑 Real-time wallet monitoring stopped');
   }, [connection, subscriptions]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopMonitoring();

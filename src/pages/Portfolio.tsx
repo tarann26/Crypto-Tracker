@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Navigation from "@/components/Navigation";
+import SellPanel from "@/components/SellPanel";
 
 interface Holding {
   id: string;
@@ -106,6 +107,7 @@ const Portfolio = () => {
         </header>
 
         <Navigation />
+        <SellPanel />
 
         {/* Portfolio Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

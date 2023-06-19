@@ -138,6 +138,7 @@ const SellPanel = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ signed_transaction: bytesToB64(signed.serialize()) }),
         });
+        if (!exec.ok) throw new Error((await exec.json()).detail);
         const result = await exec.json();
         setStatus(
           result.status === "confirmed"
@@ -173,7 +174,10 @@ const SellPanel = () => {
               <Button
                 variant={selectedMint === WSOL ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedMint(WSOL)}
+                onClick={() => {
+                  setSelectedMint(WSOL);
+                  setQuote(null);
+                }}
               >
                 SOL
               </Button>
@@ -182,7 +186,10 @@ const SellPanel = () => {
                   key={t.mint}
                   variant={selectedMint === t.mint ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedMint(t.mint)}
+                  onClick={() => {
+                    setSelectedMint(t.mint);
+                    setQuote(null);
+                  }}
                 >
                   {shortMint(t.mint)} ({t.amount})
                 </Button>
@@ -198,7 +205,10 @@ const SellPanel = () => {
                   min="0"
                   step="any"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                    setQuote(null);
+                  }}
                 />
               </div>
               <Button variant="outline" onClick={fetchQuote} disabled={busy}>

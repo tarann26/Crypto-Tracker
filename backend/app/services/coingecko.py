@@ -30,7 +30,10 @@ def _get(path: str, params: dict) -> dict:
     if resp.status_code != 200:
         raise UpstreamError(f"coingecko returned {resp.status_code}")
 
-    data = resp.json()
+    try:
+        data = resp.json()
+    except ValueError as exc:
+        raise UpstreamError("coingecko returned non-json body") from exc
     store.cache_put(cache_key, data)
     return data
 

@@ -26,7 +26,11 @@ def _rpc(method: str, params: list):
             last_err = RpcError(f"{url} returned {resp.status_code}")
             continue
 
-        body = resp.json()
+        try:
+            body = resp.json()
+        except ValueError as exc:
+            raise RpcError(f"{url} returned non-json body") from exc
+
         if "error" in body:
             raise RpcError(f"rpc error: {body['error'].get('message')}")
         return body["result"]

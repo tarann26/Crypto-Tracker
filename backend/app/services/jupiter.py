@@ -27,16 +27,21 @@ def get_quote(input_mint: str, amount_ui: float, slippage_bps: int = 50) -> dict
     if resp.status_code != 200:
         raise QuoteError(f"jupiter quote failed ({resp.status_code}): {resp.text[:200]}")
 
-    quote = resp.json()
-    return {
-        "input_mint": input_mint,
-        "output_mint": config.USDC_MINT,
-        "in_amount": quote["inAmount"],
-        "out_amount": quote["outAmount"],
-        "out_amount_ui": int(quote["outAmount"]) / 10 ** 6,
-        "price_impact_pct": float(quote.get("priceImpactPct") or 0),
-        "quote": quote,
-    }
+    try:
+        quote = resp.json()
+        result = {
+            "input_mint": input_mint,
+            "output_mint": config.USDC_MINT,
+            "in_amount": quote["inAmount"],
+            "out_amount": quote["outAmount"],
+            "out_amount_ui": int(quote["outAmount"]) / 10 ** 6,
+            "price_impact_pct": float(quote.get("priceImpactPct") or 0),
+            "quote": quote,
+        }
+    except (ValueError, KeyError) as exc:
+        raise QuoteError("jupiter returned a malformed quote") from exc
+
+    return result
 
 
 def build_swap_transaction(quote: dict, user_public_key: str) -> str:
@@ -52,4 +57,7 @@ def build_swap_transaction(quote: dict, user_public_key: str) -> str:
     if resp.status_code != 200:
         raise QuoteError(f"jupiter swap build failed ({resp.status_code}): {resp.text[:200]}")
 
-    return resp.json()["swapTransaction"]
+    try:
+        return resp.json()["swapTransaction"]
+    except (ValueError, KeyError) as exc:
+        raise QuoteError("jupiter returned a malformed swap response") from exc

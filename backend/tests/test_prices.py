@@ -48,6 +48,13 @@ def test_upstream_down_is_502():
     assert resp.status_code == 502
 
 
+@respx.mock
+def test_non_json_body_is_502():
+    respx.get(PRICE_URL).mock(return_value=httpx.Response(200, text="not json"))
+    resp = client.get("/api/prices", params={"ids": "solana"})
+    assert resp.status_code == 502
+
+
 def test_empty_ids_is_400():
     resp = client.get("/api/prices", params={"ids": " , "})
     assert resp.status_code == 400

@@ -1,8 +1,10 @@
 import httpx
+import pytest
 import respx
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.services import solana
 
 client = TestClient(app)
 
@@ -93,3 +95,22 @@ def test_all_rpcs_down_is_502():
 def test_bad_address_is_400():
     resp = client.get("/api/wallet/not-an-address!/balances")
     assert resp.status_code == 400
+
+
+@respx.mock
+def test_get_mint_decimals_non_wsol_is_cached():
+    route = respx.post(RPC).mock(return_value=rpc_response({"value": {"decimals": 6}}))
+    assert solana.get_mint_decimals(MINT) == 6
+    assert solana.get_mint_decimals(MINT) == 6
+    assert route.call_count == 1
+
+
+@respx.mock
+def test_rpc_error_field_raises_immediately():
+    route = respx.post(RPC).mock(return_value=httpx.Response(200, json={
+        "jsonrpc": "2.0", "id": 1,
+        "error": {"code": -32602, "message": "invalid params"},
+    }))
+    with pytest.raises(solana.RpcError):
+        solana.get_sol_balance(ADDR)
+    assert route.call_count == 1

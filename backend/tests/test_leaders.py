@@ -66,3 +66,14 @@ def test_leaders_endpoint_fetches_histories():
     })
     assert resp.status_code == 200
     assert resp.json()["analyzed"] == 2
+
+
+@respx.mock
+def test_leaders_endpoint_502_when_rpc_fails():
+    respx.post("https://api.mainnet-beta.solana.com").mock(return_value=httpx.Response(500))
+    respx.post("https://solana-rpc.publicnode.com").mock(return_value=httpx.Response(500))
+    resp = client.post("/api/analysis/leaders", json={
+        "wallets": ["4Nd1mBQtrMJVYVfKf2PJy9NZUZdTAsp7D4xWLs4gDB4T",
+                    "7cVfgArCheMR6Cs4t6vz5rfnqd56vZq4ndaBrY5xkxXy"],
+    })
+    assert resp.status_code == 502
